@@ -53,9 +53,10 @@ namespace protobuf = google::protobuf;
 
 // Writes the generated service interface into the given ZeroCopyOutputStream
 void GenerateService(
-    const impl::protobuf::ServiceDescriptor *service,
-    impl::protobuf::io::ZeroCopyOutputStream *out,
-    impl::protobuf::compiler::rust::Context &rust_generator_context);
+    impl::protobuf::compiler::rust::Context &rust_generator_context,
+    const impl::protobuf::ServiceDescriptor *service);
+
+std::string GetRsGrpcFile(const impl::protobuf::FileDescriptor &file);
 } // namespace rust_grpc_generator
 
 #endif // NET_GRPC_COMPILER_RUST_GENERATOR_H_

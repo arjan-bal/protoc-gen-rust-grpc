@@ -60,21 +60,20 @@ public:
     modules.emplace_back(rust::RustInternalModuleName(*file));
     rust::Context ctx_without_printer(&*opts, &rust_generator_context, nullptr,
                                       std::move(modules));
+    auto outfile = absl::WrapUnique(
+        context->Open(rust_grpc_generator::GetRsGrpcFile(*file)));
+    protobuf::io::Printer printer(outfile.get());
+    rust::Context ctx = ctx_without_printer.WithPrinter(&printer);
 
     for (int i = 0; i < file->service_count(); ++i) {
       const protobuf::ServiceDescriptor *service = file->service(i);
-      std::string filename = "TODO.rust";
-      std::unique_ptr<protobuf::io::ZeroCopyOutputStream> output(
-          context->Open(filename));
-      rust_grpc_generator::GenerateService(service, output.get(),
-                                           &ctx_without_printer);
+      rust_grpc_generator::GenerateService(ctx, service);
     }
     return true;
   }
 };
 
 int main(int argc, char *argv[]) {
-  std::cout << "Hello world";
   RustGrpcGenerator generator;
   return protobuf::compiler::PluginMain(argc, argv, &generator);
   return 0;
