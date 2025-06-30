@@ -4,7 +4,6 @@
 #include <google/protobuf/compiler/rust/context.h>
 #include <google/protobuf/compiler/rust/crate_mapping.h>
 #include <google/protobuf/compiler/rust/naming.h>
-#include <iostream>
 
 namespace protobuf = google::protobuf;
 namespace rust = google::protobuf::compiler::rust;
@@ -33,6 +32,10 @@ public:
                 const std::string &parameter,
                 protobuf::compiler::GeneratorContext *context,
                 std::string *error) const override {
+    // Return early to avoid creating an empty output file.
+    if (file->service_count() == 0) {
+      return true;
+    }
     std::vector<std::pair<std::string, std::string>> options;
     protobuf::compiler::ParseGeneratorParameter(parameter, &options);
 
