@@ -195,13 +195,13 @@ static void GenerateMethods(const Service &service, Context &ctx) {
         let codec = $codec_name$::default();
         let path = http::uri::PathAndQuery::from_static("$path$");
         let mut req = request.into_request();
-        req.extensions_mut().insert(GrpcMethod::new($service_name$, $method_name$));
+        req.extensions_mut().insert(GrpcMethod::new("$service_name$", "$method_name$"));
         self.inner.server_streaming(req, path, codec).await
     }
     )rs";
 
   static std::string server_streaming_format = R"rs(
-            pub async fn $ident$(
+        pub async fn $ident$(
             &mut self,
             request: impl tonic::IntoRequest<$request$>,
         ) -> std::result::Result<tonic::Response<tonic::codec::Streaming<$response$>>, tonic::Status> {
@@ -211,7 +211,7 @@ static void GenerateMethods(const Service &service, Context &ctx) {
             let codec = $codec_name$::default();
             let path = http::uri::PathAndQuery::from_static("$path$");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new($service_name$, $method_name$));
+            req.extensions_mut().insert(GrpcMethod::new("$service_name$", "$method_name$"));
             self.inner.server_streaming(req, path, codec).await
         }
       )rs";
@@ -227,7 +227,7 @@ static void GenerateMethods(const Service &service, Context &ctx) {
             let codec = $codec_name$::default();
             let path = http::uri::PathAndQuery::from_static("$path$");
             let mut req = request.into_streaming_request();
-            req.extensions_mut().insert(GrpcMethod::new($service_name$, $method_name$));
+            req.extensions_mut().insert(GrpcMethod::new("$service_name$", "$method_name$"));
             self.inner.client_streaming(req, path, codec).await
         }
       )rs";
@@ -243,7 +243,7 @@ static void GenerateMethods(const Service &service, Context &ctx) {
             let codec = $codec_name$::default();
             let path = http::uri::PathAndQuery::from_static("$path$");
             let mut req = request.into_streaming_request();
-            req.extensions_mut().insert(GrpcMethod::new($service_name$,$method_name$));
+            req.extensions_mut().insert(GrpcMethod::new("$service_name$", "$method_name$"));
             self.inner.streaming(req, path, codec).await
         }
       )rs";
@@ -276,6 +276,9 @@ static void GenerateMethods(const Service &service, Context &ctx) {
         ctx.Emit(client_streaming_format);
       } else {
         ctx.Emit(streaming_format);
+      }
+      if (&method != &methods.back()) {
+        ctx.Emit("\n");
       }
     }
   }
@@ -327,8 +330,8 @@ static void generate_client(const Service &service, Context &ctx) {
               }
 
               pub fn with_origin(inner: T, origin: Uri) -> Self {
-                  let inner = tonic::client::Grpc::with_origin(inner,
-                  origin); Self { inner }
+                  let inner = tonic::client::Grpc::with_origin(inner, origin);
+                  Self { inner }
               }
 
               pub fn with_interceptor<F>(inner: T, interceptor: F) ->
@@ -344,8 +347,7 @@ static void generate_client(const Service &service, Context &ctx) {
                   tonic::codegen::Service<http::Request<tonic::body::Body>>>::Error:
                   Into<StdError> + std::marker::Send + std::marker::Sync,
               {
-                  $service_ident$::new(InterceptedService::new(inner,
-                  interceptor))
+                  $service_ident$::new(InterceptedService::new(inner, interceptor))
               }
 
               /// Compress requests with the given encoding.
@@ -389,9 +391,7 @@ static void generate_client(const Service &service, Context &ctx) {
 
               $methods$
           }
-      }
-  }
-  )rs");
+      })rs");
 }
 
 } // namespace client
